@@ -22,6 +22,12 @@ const counterStore = useCounterStore()
 
 <template>
   <div>
+    <hr />
+    <!-- 查看配置的路由 -->
+    <router-view></router-view>
+    <hr />
+    <hr />
+
     我是App
     <testDemo></testDemo>
   </div>
