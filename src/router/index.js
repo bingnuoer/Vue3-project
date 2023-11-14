@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useUserStore } from '@/stores'
 // createRouter 创建路由实例
 // 配置history模式:
 // 1.history模式：createWebHistory
@@ -36,6 +37,15 @@ const router = createRouter({
       ]
     }
   ]
+})
+
+// 登录访问拦截 -> 默认是直接放行的
+// 根据返回值决定，放行/拦截
+router.beforeEach((to) => {
+  // 没有token，且访问的是非登录页，拦截到登录，其他情况正常放行
+  const userStore = useUserStore()
+  if (!userStore.token && to.path !== '/login') return '/login'
+  // return true //放行
 })
 
 export default router
