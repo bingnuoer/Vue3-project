@@ -4,6 +4,7 @@ import { Edit, Delete } from '@element-plus/icons-vue'
 import ChannelSelect from './components/ChannelSelect.vue'
 import { artGetArticleList } from '@/api/article.js'
 import { formatTime } from '@/utils/format.js'
+const loading = ref(false)
 const articleList = ref([]) //列表数据
 const total = ref() //响应匹配数据总数
 
@@ -19,9 +20,13 @@ const params = ref({
 
 // 基于params参数，获取文章列表
 const getArticleList = async () => {
+  loading.value = true //获取文章列表前 开启loading效果
+
   const res = await artGetArticleList(params.value)
   articleList.value = res.data.data
   total.value = res.data.total
+
+  loading.value = false //获取文章列表后 关闭loading效果
   console.log(res.data)
 }
 getArticleList()
@@ -82,7 +87,8 @@ const onCurrentChange = (page) => {
     </el-form>
 
     <!-- 表格区域 -->
-    <el-table :data="articleList">
+    <!-- 给表格区域加loading效果 -->
+    <el-table :data="articleList" v-loading="loading">
       <el-table-column label="文章标题" prop="title">
         <!-- 超链接 -->
         <!-- 插槽-自定义取数据，比prop方便 -->
