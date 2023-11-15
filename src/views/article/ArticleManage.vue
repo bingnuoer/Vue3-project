@@ -1,22 +1,30 @@
 <script setup>
 import { ref } from 'vue'
 import { Edit, Delete } from '@element-plus/icons-vue'
-const articleList = ref([
-  {
-    id: 5961,
-    title: '新的文章啊',
-    pub_date: '2022-07-10 14:53:52.604',
-    state: '已发布',
-    cate_name: '体育'
-  },
-  {
-    id: 5962,
-    title: '新的文章啊',
-    pub_date: '2022-07-10 14:54:30.904',
-    state: '草稿',
-    cate_name: '体育'
-  }
-])
+import ChannelSelect from './components/ChannelSelect.vue'
+import { artGetArticleList } from '@/api/article.js'
+import { formatTime } from '@/utils/format.js'
+const articleList = ref([]) //列表数据
+const total = ref() //响应匹配数据总数
+
+// 父组件数据-死数据
+// const cateId = ref(70664)
+// 活数据-所有参数
+const params = ref({
+  pagenum: 1, // 当前页码数
+  pagesize: 5, //当前页的数据条数
+  cate_id: '',
+  state: ''
+})
+
+// 基于params参数，获取文章列表
+const getArticleList = async () => {
+  const res = await artGetArticleList(params.value)
+  articleList.value = res.data.data
+  total.value = res.data.total
+  console.log(res.data)
+}
+getArticleList()
 
 // 编辑逻辑
 const onEditArticle = (row) => {
@@ -27,6 +35,22 @@ const onEditArticle = (row) => {
 const onDeleteArticle = (row) => {
   console.log(row)
 }
+
+// 每页数据条数监听
+const onSizeChange = (size) => {
+  // console.log('当前每页条数', size)
+  // 当前每页条数变了，重新渲染第1页
+  params.value.pagenum = 1 //当前页
+  params.value.pagesize = size //每页数据条数
+  // 基于最新的当前页 和 每页数据条数，渲染数据
+  getArticleList()
+}
+
+const onCurrentChange = (page) => {
+  // console.log('当前页', page)
+  params.value.pagenum = page
+  getArticleList()
+}
 </script>
 <template>
   <!-- 直接使用组件，配置页面。不用导入 -->
@@ -35,18 +59,17 @@ const onDeleteArticle = (row) => {
     <template #extra>
       <el-button>发布文章</el-button>
     </template>
-    <!-- 表单部分 -->
+    <!-- 表单区域 -->
     <el-form inline>
       <el-form-item label="文章分类：">
-        <el-select>
-          <!-- lable:展示给用户看，value:提交给后台的数据 -->
-          <el-option label="新闻" value="110"></el-option>
-          <el-option label="体育" value="137"></el-option>
-        </el-select>
+        <!-- 父组件数据与子组件做绑定:下拉框默认选中70187这个数据 -->
+        <!-- v-model简写 v-model:modelValue="params.cate_id" -->
+        <channel-select v-model="params.cate_id"></channel-select>
+        <!-- <channel-select v-model:cid="params.cate_id"></channel-select> -->
       </el-form-item>
 
       <el-form-item label="发布状态：">
-        <el-select>
+        <el-select v-model="params.state">
           <el-option label="已发布" value="已发布"></el-option>
           <el-option label="草稿" value="草稿"></el-option>
         </el-select>
@@ -58,7 +81,7 @@ const onDeleteArticle = (row) => {
       </el-form-item>
     </el-form>
 
-    <!-- 表格部分 -->
+    <!-- 表格区域 -->
     <el-table :data="articleList">
       <el-table-column label="文章标题" prop="title">
         <!-- 超链接 -->
@@ -68,7 +91,12 @@ const onDeleteArticle = (row) => {
         </template>
       </el-table-column>
       <el-table-column label="分类" prop="cate_name"></el-table-column>
-      <el-table-column label="发表时间" prop="pub_date"></el-table-column>
+      <el-table-column label="发表时间" prop="pub_date">
+        <!-- 在标签内部格式化时间 -->
+        <template #default="{ row }">
+          {{ formatTime(row.pub_date) }}
+        </template>
+      </el-table-column>
       <el-table-column label="状态" prop="state"></el-table-column>
       <el-table-column label="操作">
         <template #default="{ row }">
@@ -90,6 +118,21 @@ const onDeleteArticle = (row) => {
         </template>
       </el-table-column>
     </el-table>
+
+    <!-- 分页区域 -->
+    <!-- page-sizes必须包含自己设置的pagesize: 5每页多少条 -->
+    <!-- flex布局居右 justify-content: end -->
+    <el-pagination
+      v-model:current-page="params.pagenum"
+      v-model:page-size="params.pagesize"
+      :page-sizes="[2, 3, 5, 10]"
+      :background="true"
+      layout="jumper,total, sizes, prev, pager, next "
+      :total="total"
+      @size-change="onSizeChange"
+      @current-change="onCurrentChange"
+      style="margin-top: 20px; justify-content: end"
+    />
   </page-container>
 </template>
 
