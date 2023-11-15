@@ -6,6 +6,7 @@ import { Plus } from '@element-plus/icons-vue'
 // 局部注册富文本编辑器
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
+import { artPublishService } from '@/api/article.js'
 
 // 准备抽屉
 const visibleDrawer = ref(false)
@@ -27,6 +28,8 @@ const formModel = ref({
 // 1. open({ })                   =>  添加操作，添加表单初始化无数据
 // 2. open({ id: xx,  ...  })  =>  编辑操作，编辑表单初始化需回显
 const imgUrl = ref('')
+// 富文本编辑器数据
+const editorRef = ref('')
 // 监听上传图片
 const onUploadFile = (uploadFile) => {
   //   console.log(uploadFile)
@@ -34,6 +37,38 @@ const onUploadFile = (uploadFile) => {
   imgUrl.value = URL.createObjectURL(uploadFile.raw) //预览图片
   formModel.value.cover_img = uploadFile.raw //提交图片
 }
+
+// 发布文章
+const emit = defineEmits(['success'])
+const onPublish = async (state) => {
+  // 将已发布、草稿状态存入formModel
+  formModel.value.state = state
+
+  // 注意：当前接口，需要的是 formData对象
+  // 将普通对象 => 转换成 => formData对象
+  const fd = new FormData()
+  // formModel.value.value的值循环存到fd中
+  for (let key in formModel.value) {
+    fd.append(key, formModel.value[key])
+  }
+
+  //   发请求
+  if (formModel.value.id) {
+    // 编辑操作
+    console.log('编辑操作')
+  } else {
+    // 添加操作
+    await artPublishService(fd)
+    // 弹窗
+    ElMessage.success('添加成功')
+    // 关闭抽屉
+    visibleDrawer.value = false
+    // 通知父组件，添加成功了
+    // 'add' 区分添加/编辑
+    emit('success', 'add')
+  }
+}
+
 // 调用open方法，打开抽屉
 const open = (row) => {
   visibleDrawer.value = true
@@ -46,6 +81,9 @@ const open = (row) => {
     // 基于默认的数据重置form数据
     formModel.value = { ...defaultForm }
     console.log('添加')
+    // 这里重置了表单数据，但是图片上传img地址，富文本编辑器内容 => 需要手动重置
+    imgUrl.value = ''
+    editorRef.value.setHTML('')
   }
 }
 // 把open方法暴露出去
@@ -92,6 +130,7 @@ defineExpose({
           <!-- contentType="html" 文本是html页面文本形式 -->
           <!-- <QuillEditor theme="snow"></QuillEditor> -->
           <quill-editor
+            ref="editorRef"
             theme="snow"
             v-model:content="formModel.content"
             contentType="html"
@@ -99,8 +138,8 @@ defineExpose({
         </div>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary">发布</el-button>
-        <el-button type="info">草稿</el-button>
+        <el-button @click="onPublish('已发布')" type="primary">发布</el-button>
+        <el-button @click="onPublish('草稿')" type="info">草稿</el-button>
       </el-form-item>
     </el-form>
   </el-drawer>

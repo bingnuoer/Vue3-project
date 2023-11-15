@@ -15,8 +15,11 @@ export const artDelChannelsService = (id) =>
     params: { id }
   })
 
-// 列表：获取文章列表
+// 文章：获取文章列表
 export const artGetArticleList = (params) =>
   request.get('/my/article/list', {
     params
   })
+
+// 文章:发布文章
+export const artPublishService = (data) => request.post('/my/article/add', data)

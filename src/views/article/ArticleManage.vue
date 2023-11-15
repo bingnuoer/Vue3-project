@@ -67,6 +67,7 @@ const onReset = () => {
 
 // 抽屉逻辑
 const articleEditRef = ref()
+
 // 添加逻辑
 const onAddArticle = () => {
   articleEditRef.value.open({}) //传空对象
@@ -81,6 +82,18 @@ const onEditArticle = (row) => {
 // 删除逻辑
 const onDeleteArticle = (row) => {
   console.log(row)
+}
+
+// 添加/编辑，成功的回调
+const onSuccess = (type) => {
+  if (type === 'add') {
+    // 如果是添加，最好渲染最后一项
+    const lastPage = Math.ceil((total.value + 1) / params.value.pagesize)
+    // 更新最大页码数，再渲染
+    params.value.pagenum = lastPage
+  }
+  // 不论是 添加/编辑，都重新渲染文章列表
+  getArticleList()
 }
 </script>
 <template>
@@ -168,7 +181,7 @@ const onDeleteArticle = (row) => {
 
     <!-- 抽屉区域 -->
     <!-- ref="articleEditRef" 组件绑定数据 -->
-    <article-edit ref="articleEditRef"></article-edit>
+    <article-edit ref="articleEditRef" @success="onSuccess"></article-edit>
   </page-container>
 </template>
 
