@@ -31,16 +31,7 @@ const getArticleList = async () => {
 }
 getArticleList()
 
-// 编辑逻辑
-const onEditArticle = (row) => {
-  console.log(row)
-}
-
-// 删除逻辑
-const onDeleteArticle = (row) => {
-  console.log(row)
-}
-
+// 分页
 // 每页数据条数监听
 const onSizeChange = (size) => {
   // console.log('当前每页条数', size)
@@ -50,11 +41,37 @@ const onSizeChange = (size) => {
   // 基于最新的当前页 和 每页数据条数，渲染数据
   getArticleList()
 }
-
+// 当前页监听
 const onCurrentChange = (page) => {
   // console.log('当前页', page)
   params.value.pagenum = page
   getArticleList()
+}
+
+// 搜索、重置 监听
+const onSearch = () => {
+  // 基于当前下拉框选择数据，搜索 => 重置当前页为第1页，重新请求列表
+  params.value.pagenum = 1
+  getArticleList()
+}
+
+const onReset = () => {
+  // 清空下拉框
+  params.value.cate_id = ''
+  params.value.state = ''
+  // 重置当前页为第1页，重新请求列表
+  params.value.pagenum = 1
+  getArticleList()
+}
+
+// 编辑逻辑
+const onEditArticle = (row) => {
+  console.log(row)
+}
+
+// 删除逻辑
+const onDeleteArticle = (row) => {
+  console.log(row)
 }
 </script>
 <template>
@@ -81,8 +98,8 @@ const onCurrentChange = (page) => {
       </el-form-item>
 
       <el-form-item>
-        <el-button type="primary">搜索</el-button>
-        <el-button>重置</el-button>
+        <el-button @click="onSearch" type="primary">搜索</el-button>
+        <el-button @click="onReset">重置</el-button>
       </el-form-item>
     </el-form>
 
