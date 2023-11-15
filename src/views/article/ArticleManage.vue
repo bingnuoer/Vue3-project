@@ -18,6 +18,9 @@ const params = ref({
   state: ''
 })
 
+// 准备抽屉
+const visibleDrawer = ref(false)
+
 // 基于params参数，获取文章列表
 const getArticleList = async () => {
   loading.value = true //获取文章列表前 开启loading效果
@@ -64,6 +67,11 @@ const onReset = () => {
   getArticleList()
 }
 
+// 添加逻辑
+const onAddArticle = () => {
+  visibleDrawer.value = true
+}
+
 // 编辑逻辑
 const onEditArticle = (row) => {
   console.log(row)
@@ -79,7 +87,7 @@ const onDeleteArticle = (row) => {
   <page-container title="文章管理">
     <!-- 右侧按钮 -->
     <template #extra>
-      <el-button>发布文章</el-button>
+      <el-button type="primary" @click="onAddArticle">发布文章</el-button>
     </template>
     <!-- 表单区域 -->
     <el-form inline>
@@ -156,6 +164,16 @@ const onDeleteArticle = (row) => {
       @current-change="onCurrentChange"
       style="margin-top: 20px; justify-content: end"
     />
+
+    <!-- 抽屉区域 -->
+    <el-drawer
+      v-model="visibleDrawer"
+      title="大标题"
+      direction="rtl"
+      size="50%"
+    >
+      <span>Hi, there!</span>
+    </el-drawer>
   </page-container>
 </template>
 
