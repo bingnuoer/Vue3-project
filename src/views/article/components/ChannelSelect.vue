@@ -5,6 +5,9 @@ import { ref } from 'vue'
 defineProps({
   modelValue: {
     type: [Number, String]
+  },
+  width: {
+    type: String
   }
 })
 // 子组件提交数据
@@ -28,6 +31,7 @@ getChannelList()
   @update:modelValue 子传递给父的数据 ,$event:当前下拉框的数据 -->
 
   <el-select
+    :style="{ width }"
     :modelValue="modelValue"
     @update:modelValue="emit('update:modelValue', $event)"
   >

@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { Edit, Delete } from '@element-plus/icons-vue'
 import ChannelSelect from './components/ChannelSelect.vue'
+import ArticleEdit from './components/ArticleEdit.vue'
 import { artGetArticleList } from '@/api/article.js'
 import { formatTime } from '@/utils/format.js'
 const loading = ref(false)
@@ -17,9 +18,6 @@ const params = ref({
   cate_id: '',
   state: ''
 })
-
-// 准备抽屉
-const visibleDrawer = ref(false)
 
 // 基于params参数，获取文章列表
 const getArticleList = async () => {
@@ -67,14 +65,17 @@ const onReset = () => {
   getArticleList()
 }
 
+// 抽屉逻辑
+const articleEditRef = ref()
 // 添加逻辑
 const onAddArticle = () => {
-  visibleDrawer.value = true
+  articleEditRef.value.open({}) //传空对象
 }
 
 // 编辑逻辑
 const onEditArticle = (row) => {
-  console.log(row)
+  // console.log(row)
+  articleEditRef.value.open(row) //传值
 }
 
 // 删除逻辑
@@ -166,14 +167,8 @@ const onDeleteArticle = (row) => {
     />
 
     <!-- 抽屉区域 -->
-    <el-drawer
-      v-model="visibleDrawer"
-      title="大标题"
-      direction="rtl"
-      size="50%"
-    >
-      <span>Hi, there!</span>
-    </el-drawer>
+    <!-- ref="articleEditRef" 组件绑定数据 -->
+    <article-edit ref="articleEditRef"></article-edit>
   </page-container>
 </template>
 
