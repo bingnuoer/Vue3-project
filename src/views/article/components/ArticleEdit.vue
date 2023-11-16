@@ -6,7 +6,9 @@ import { Plus } from '@element-plus/icons-vue'
 // 局部注册富文本编辑器
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
-import { artPublishService } from '@/api/article.js'
+import { artPublishService, artGetDetailService } from '@/api/article.js'
+import { baseURL } from '@/utils/request.js'
+import axios from 'axios'
 
 // 准备抽屉
 const visibleDrawer = ref(false)
@@ -70,13 +72,23 @@ const onPublish = async (state) => {
 }
 
 // 调用open方法，打开抽屉
-const open = (row) => {
+const open = async (row) => {
   visibleDrawer.value = true
   //   console.log(row)
   //   判断区分是添加 还是 编辑
   if (row.id) {
     // 基于row.id发送请求，获取编辑对应的详情数据，进行回显
+    const res = await artGetDetailService(row.id)
     console.log('编辑回显')
+    console.log(res)
+    // 图片需要单独回显，拼接基地址
+    imgUrl.value = baseURL + formModel.value.cover_img
+    // 回显
+    formModel.value = res.data.data
+    // 需要将网络图片地址 => 转换成 file 对象，存储起来
+    const file = await imageUrlToFile(imgUrl.value, formModel.value.cover_img)
+    // 更新图片数据
+    formModel.value.cover_img = file
   } else {
     // 基于默认的数据重置form数据
     formModel.value = { ...defaultForm }
@@ -86,6 +98,29 @@ const open = (row) => {
     editorRef.value.setHTML('')
   }
 }
+
+// 将网络图片地址转换为File对象
+async function imageUrlToFile(url, fileName) {
+  try {
+    // 第一步：使用axios获取网络图片数据
+    const response = await axios.get(url, { responseType: 'arraybuffer' })
+    const imageData = response.data
+
+    // 第二步：将图片数据转换为Blob对象
+    const blob = new Blob([imageData], {
+      type: response.headers['content-type']
+    })
+
+    // 第三步：创建一个新的File对象
+    const file = new File([blob], fileName, { type: blob.type })
+
+    return file
+  } catch (error) {
+    console.error('将图片转换为File对象时发生错误:', error)
+    throw error
+  }
+}
+
 // 把open方法暴露出去
 defineExpose({
   open
