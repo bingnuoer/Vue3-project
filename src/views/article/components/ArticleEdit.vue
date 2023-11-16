@@ -6,7 +6,11 @@ import { Plus } from '@element-plus/icons-vue'
 // 局部注册富文本编辑器
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
-import { artPublishService, artGetDetailService } from '@/api/article.js'
+import {
+  artPublishService,
+  artGetDetailService,
+  artEditService
+} from '@/api/article.js'
 import { baseURL } from '@/utils/request.js'
 import axios from 'axios'
 
@@ -58,6 +62,10 @@ const onPublish = async (state) => {
   if (formModel.value.id) {
     // 编辑操作
     console.log('编辑操作')
+    await artEditService(fd)
+    ElMessage.success('修改成功')
+    visibleDrawer.value = false
+    emit('success', 'edit')
   } else {
     // 添加操作
     await artPublishService(fd)
@@ -77,14 +85,15 @@ const open = async (row) => {
   //   console.log(row)
   //   判断区分是添加 还是 编辑
   if (row.id) {
+    console.log('编辑回显')
     // 基于row.id发送请求，获取编辑对应的详情数据，进行回显
     const res = await artGetDetailService(row.id)
-    console.log('编辑回显')
     console.log(res)
-    // 图片需要单独回显，拼接基地址
-    imgUrl.value = baseURL + formModel.value.cover_img
     // 回显
     formModel.value = res.data.data
+    // 图片需要单独回显，拼接基地址
+    imgUrl.value = baseURL + formModel.value.cover_img
+
     // 需要将网络图片地址 => 转换成 file 对象，存储起来
     const file = await imageUrlToFile(imgUrl.value, formModel.value.cover_img)
     // 更新图片数据
